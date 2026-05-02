@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wrong by Default — What AI Builders Know That Everyone Else Doesn't</title>
+  <meta name="description" content="A field report on the gap between what AI can do and what it reliably does. Written by Alokit, edited by Avikalp Gupta. Available on Kindle." />
+  <meta property="og:title" content="Wrong by Default" />
+  <meta property="og:description" content="What AI Builders Know That Everyone Else Doesn't. A field report on why AI fails in production — not because models are weak, but because the systems around models are wrong by default." />
+  <meta property="og:image" content="https://wrongbydefault.com/cover.jpg" />
+  <meta property="og:type" content="book" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0e10;
+      --bg2: #14161a;
+      --bg3: #1a1d23;
+      --border: #2a2d35;
+      --text: #e8eaed;
+      --text-muted: #9aa0ad;
+      --accent: #f59e0b;
+      --accent-hover: #fbbf24;
+      --red: #ef4444;
+      --green: #22c55e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      font-size: 16px;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky;
+      top: 0;
+      background: rgba(13,14,16,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+    }
+    .nav-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent);
+      color: #000 !important;
+      padding: 0.45rem 1.1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover { background: var(--accent-hover) !important; color: #000 !important; }
+
+    /* ─── HERO ─── */
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 6rem 2rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .book-cover {
+      position: relative;
+    }
+    .book-cover img {
+      width: 100%;
+      max-width: 320px;
+      border-radius: 4px;
+      box-shadow: -12px 12px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+      display: block;
+    }
+    .cover-placeholder {
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 10/16;
+      background: linear-gradient(135deg, #1a1d23 0%, #0d0e10 100%);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: -12px 12px 40px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    .cover-placeholder .traffic-light {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+    }
+    .cover-placeholder .cover-title {
+      font-family: 'Lora', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+    .cover-placeholder .cover-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .hero-content {}
+    .badge {
+      display: inline-block;
+      background: rgba(245,158,11,0.12);
+      border: 1px solid rgba(245,158,11,0.3);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.8rem;
+      border-radius: 999px;
+      margin-bottom: 1.25rem;
+    }
+    h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 600;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+      color: #fff;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-bottom: 1.75rem;
+    }
+    .lead {
+      font-size: 1.05rem;
+      color: var(--text);
+      margin-bottom: 1rem;
+      max-width: 580px;
+    }
+    .lead strong { color: #fff; }
+
+    .hero-meta {
+      display: flex;
+      gap: 2rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .meta-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    .meta-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.8rem 1.75rem;
+      border-radius: 8px;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); color: #000; transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--text);
+      font-weight: 500;
+      font-size: 0.95rem;
+      padding: 0.8rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--text-muted); color: #fff; }
+    .price-note {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      align-self: center;
+    }
+
+    /* ─── DIVIDER ─── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 0;
+    }
+
+    /* ─── SECTIONS ─── */
+    section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    h2 {
+      font-family: 'Lora', serif;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      font-weight: 600;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 1.25rem;
+    }
+    .section-intro {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin-bottom: 3rem;
+    }
+
+    /* ─── NUMBERS ─── */
+    .numbers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .number-card {
+      background: var(--bg2);
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .number-big {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .number-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .number-note {
+      font-size: 0.75rem;
+      color: #555;
+      font-style: italic;
+    }
+
+    /* ─── ARGUMENT ─── */
+    .argument-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .arg-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.75rem;
+    }
+    .arg-icon { font-size: 1.4rem; margin-bottom: 0.75rem; }
+    .arg-title {
+      font-weight: 600;
+      color: #fff;
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+    .arg-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ─── EXCERPT ─── */
+    .excerpt-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 2.5rem;
+      max-width: 760px;
+    }
+    .excerpt-block p {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      color: var(--text);
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+    .excerpt-block p:last-of-type { margin-bottom: 0; }
+    .excerpt-source {
+      margin-top: 1.25rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* ─── CHAPTERS ─── */
+    .chapters-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .chapter-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      transition: border-color 0.2s;
+    }
+    .chapter-item:hover { border-color: var(--accent); }
+    .ch-num {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 2.5rem;
+      margin-top: 2px;
+    }
+    .ch-info {}
+    .ch-title {
+      font-weight: 600;
+      color: #fff;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+    .ch-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ─── AUTHOR ─── */
+    .author-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+    .author-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .author-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .author-name {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+    .author-role {
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    .author-bio {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 600px;
+    }
+    .editor-note {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .editor-note strong { color: var(--text); }
+
+    /* ─── CHECKLIST ─── */
+    .checklist {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2.5rem;
+      max-width: 680px;
+    }
+    .checklist h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.2rem;
+      color: #fff;
+      margin-bottom: 1.5rem;
+    }
+    .checklist-item {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .check-icon { color: var(--accent); font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+    .check-q { font-size: 0.9rem; color: var(--text); font-weight: 500; }
+
+    /* ─── BOTTOM CTA ─── */
+    .bottom-cta {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 5rem 2rem;
+    }
+    .bottom-cta h2 {
+      max-width: 600px;
+      margin: 0 auto 1rem;
+    }
+    .bottom-cta p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 500px;
+      margin: 0 auto 2.5rem;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+    footer a { color: var(--text-muted); }
+    footer a:hover { color: var(--accent); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+        padding: 4rem 1.5rem 3rem;
+      }
+      .book-cover { display: flex; justify-content: center; }
+      .book-cover img, .cover-placeholder { max-width: 220px; }
+      .argument-grid { grid-template-columns: 1fr; }
+      .author-block {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 2rem;
+      }
+      .author-avatar { width: 70px; height: 70px; font-size: 1.8rem; }
+      nav { padding: 1rem; }
+      .nav-links { display: none; }
+      section { padding: 3.5rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <span class="nav-title">Wrong by Default</span>
+    <div class="nav-links">
+      <a href="#argument">The Argument</a>
+      <a href="#chapters">Chapters</a>
+      <a href="#author">Author</a>
+      <a href="#buy" class="nav-cta">Buy on Kindle →</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="book-cover">
+      <!-- Swap img src when cover.jpg is deployed -->
+      <img src="cover.jpg" alt="Wrong by Default — book cover" />
+    </div>
+    <div class="hero-content">
+      <div class="badge">New Release · May 2026</div>
+      <h1>Wrong by Default</h1>
+      <p class="subtitle">What AI Builders Know That Everyone Else Doesn't</p>
+      <p class="lead">
+        A field report on why AI fails in production — not because models are weak,
+        but because <strong>the systems around models are wrong by default.</strong>
+      </p>
+      <p class="lead">
+        Written by <strong>Alokit</strong>, an AI executive assistant, from reading the
+        public writing of ~680 engineers, founders, and researchers who are actually
+        shipping AI in production. Edited by <strong>Avikalp Gupta</strong>.
+      </p>
+
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <span class="meta-value">~680</span>
+          <span class="meta-label">builders cited</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="meta-value">11</span>
+          <span class="meta-label">core chapters</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="meta-value">~40k</span>
+          <span class="meta-label">words</span>
+        </div>
+        <div class="hero-meta-item">
+          <span class="meta-value">$7.99</span>
+          <span class="meta-label">Kindle price</span>
+        </div>
+      </div>
+
+      <div class="cta-row" id="buy">
+        <a href="AMAZON_LINK_HERE" class="btn-primary">
+          📖 Read on Kindle →
+        </a>
+        <a href="PAPERBACK_LINK_HERE" class="btn-secondary">
+          📦 Paperback
+        </a>
+        <span class="price-note">Also available in print · $14.99</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- THE NUMBERS -->
+  <section>
+    <div class="section-label">The Evidence</div>
+    <h2>Five numbers that explain why AI deployments fail</h2>
+    <p class="section-intro">
+      These aren't opinions. They're patterns that showed up independently,
+      across different industries, from builders who weren't coordinating.
+    </p>
+    <div class="numbers-grid">
+      <div class="number-card">
+        <div class="number-big">25×</div>
+        <div class="number-desc">performance gap between the same model with basic vs. proper orchestration on real engineering tasks</div>
+        <div class="number-note">SWE-bench, 2024 — 2% bare model vs. ~50% with scaffolding</div>
+      </div>
+      <div class="number-card">
+        <div class="number-big">72%</div>
+        <div class="number-desc">of organizations reported AI deployments underperformed initial expectations in 2025</div>
+        <div class="number-note">Gartner Global Labor Market Survey, 2025</div>
+      </div>
+      <div class="number-card">
+        <div class="number-big">65%</div>
+        <div class="number-desc">end-to-end reliability when three components each have 90% reliability — compounding failure</div>
+        <div class="number-note">The multiplication problem, Chapter 10</div>
+      </div>
+      <div class="number-card">
+        <div class="number-big">~0</div>
+        <div class="number-desc">production AI systems that have vibes-based evaluation and don't regress within three months</div>
+        <div class="number-note">observed pattern — not peer-reviewed, but the point stands</div>
+      </div>
+      <div class="number-card">
+        <div class="number-big">11</div>
+        <div class="number-desc">questions you should be able to answer before shipping any AI system — most teams can't answer four of them</div>
+        <div class="number-note">Pre-Ship Checklist, Appendix</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- THE ARGUMENT -->
+  <section id="argument">
+    <div class="section-label">The Core Argument</div>
+    <h2>The bottleneck isn't the model.<br />It never was.</h2>
+    <p class="section-intro">
+      Everyone serious already has access to frontier AI. The model race is over.
+      The teams winning in 2026 are winning on execution — context, verification,
+      measurement, governance. The execution layer.
+    </p>
+    <div class="argument-grid">
+      <div class="arg-card">
+        <div class="arg-icon">🧠</div>
+        <div class="arg-title">Context is your real operating system</div>
+        <div class="arg-text">What your AI knows at inference time — not which model you chose — determines most of the quality variance in production systems. Context infrastructure is the work most teams skip.</div>
+      </div>
+      <div class="arg-card">
+        <div class="arg-icon">✅</div>
+        <div class="arg-title">Nobody owns "correct"</div>
+        <div class="arg-text">Most AI failures aren't model failures. They're verification failures. No one defined what "correct" looked like, so no one noticed when it wasn't happening. Ownership of correctness is organizational, not technical.</div>
+      </div>
+      <div class="arg-card">
+        <div class="arg-icon">📈</div>
+        <div class="arg-title">Most systems don't improve after launch</div>
+        <div class="arg-text">The feedback loop that should connect production usage to model improvement usually doesn't exist. Every team that builds it calls it their best decision. Almost no team builds it from the start.</div>
+      </div>
+      <div class="arg-card">
+        <div class="arg-icon">📐</div>
+        <div class="arg-title">Vibes-based evaluation is a reliability strategy</div>
+        <div class="arg-text">"We ran it, it seemed fine" is still how the majority of production AI systems are assessed. Every team that builds real evaluation infrastructure describes the same revelation: you can't improve what you can't measure.</div>
+      </div>
+      <div class="arg-card">
+        <div class="arg-icon">🔁</div>
+        <div class="arg-title">Autonomy amplifies what's already there</div>
+        <div class="arg-text">Agents don't fix execution layer problems. They multiply them. Every architectural weakness — unclear scope, missing verification, absent feedback — gets more expensive at agent scale. Build the foundation first.</div>
+      </div>
+      <div class="arg-card">
+        <div class="arg-icon">🏗️</div>
+        <div class="arg-title">The moat is evaluation data</div>
+        <div class="arg-text">The teams building durable competitive advantage aren't doing it with model access — everyone has that. They're doing it with evaluation datasets derived from real production failures that no competitor can replicate.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- EXCERPT -->
+  <section>
+    <div class="section-label">From Chapter 1</div>
+    <h2>An excerpt</h2>
+    <div class="excerpt-block">
+      <p>
+        In 2024, Google's DORA team published their annual State of DevOps Report.
+        The headline finding was strange. AI adoption significantly increases individual
+        productivity and job satisfaction — and simultaneously <em>negatively impacts
+        software delivery stability and throughput.</em>
+      </p>
+      <p>
+        More capable. Less stable. Both true, at the same time.
+      </p>
+      <p>
+        That seems like it shouldn't be possible. You add a more powerful tool to an
+        engineering organization. Individual engineers get faster. The system gets worse.
+        How?
+      </p>
+      <p>
+        The answer isn't satisfying in the way a single culprit would be satisfying.
+        There's no one thing that went wrong. There's a pattern — a predictable failure
+        mode that shows up everywhere organizations have deployed AI capability without
+        the surrounding infrastructure to make that capability reliable.
+      </p>
+      <p>
+        The model is not the problem. The configuration around the model is wrong by default.
+      </p>
+      <div class="excerpt-source">— Chapter 1: The Model Is Not the Product</div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- CHAPTERS -->
+  <section id="chapters">
+    <div class="section-label">Contents</div>
+    <h2>What's inside</h2>
+    <p class="section-intro">11 chapters. Each takes one piece of the execution layer problem and follows independent voices from different industries to where they converge.</p>
+    <div class="chapters-list">
+      <div class="chapter-item">
+        <div class="ch-num">Ch 1</div>
+        <div class="ch-info">
+          <div class="ch-title">The Model Is Not the Product</div>
+          <div class="ch-desc">Why execution beats model selection. The 25x orchestration gap. The DORA paradox.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 2</div>
+        <div class="ch-info">
+          <div class="ch-title">Context Is Your Real Operating System</div>
+          <div class="ch-desc">Context infrastructure as prerequisite. What Glean learned building enterprise search. MCP for portability.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 3</div>
+        <div class="ch-info">
+          <div class="ch-title">The Verification Gap</div>
+          <div class="ch-desc">Nobody owns "correct." Scope vs. behavioral misalignment. Why most AI failures are organizational, not technical.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 4</div>
+        <div class="ch-info">
+          <div class="ch-title">When Knowledge Appears Before You Look</div>
+          <div class="ch-desc">Ambient intelligence. Predictive vs. reactive systems. What the best implementations have in common.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 5</div>
+        <div class="ch-info">
+          <div class="ch-title">The Accessibility Inversion</div>
+          <div class="ch-desc">Output access ≠ competitive advantage. Karya, O2OBOTS, Ericsson. Who AI deployment actually serves.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 6</div>
+        <div class="ch-info">
+          <div class="ch-title">The Org Chart Is the Bottleneck</div>
+          <div class="ch-desc">Agent sprawl. Governance gap. Who owns the agent when it fails? The accountability problem.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 7</div>
+        <div class="ch-info">
+          <div class="ch-title">The Feedback Loop That Isn't There</div>
+          <div class="ch-desc">Why most systems don't improve after launch. The difference between teams that compound and teams that plateau.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 8</div>
+        <div class="ch-info">
+          <div class="ch-title">The Autonomy Trap</div>
+          <div class="ch-desc">Agents amplify execution layer weaknesses. Prompt injection, confused deputy attacks, scope minimization.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 9</div>
+        <div class="ch-info">
+          <div class="ch-title">The Measurement Problem</div>
+          <div class="ch-desc">Vibes-based evaluation vs. systematic measurement. Error analysis as highest-ROI activity. Evaluation capital.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 10</div>
+        <div class="ch-info">
+          <div class="ch-title">What Ships</div>
+          <div class="ch-desc">The multiplication problem. Platform-not-model framing. What getting it right actually looks like.</div>
+        </div>
+      </div>
+      <div class="chapter-item">
+        <div class="ch-num">Ch 11</div>
+        <div class="ch-info">
+          <div class="ch-title">The Compounding Return</div>
+          <div class="ch-desc">Institutional failure-mode knowledge as a moat. The flywheel. Why the gap between teams widens over time.</div>
+        </div>
+      </div>
+      <div class="chapter-item" style="border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.04);">
+        <div class="ch-num" style="color: var(--text-muted)">+</div>
+        <div class="ch-info">
+          <div class="ch-title" style="color: var(--text-muted)">Pre-Ship Checklist · Discussion Guide · Glossary</div>
+          <div class="ch-desc">Six questions before deploying any AI system. 40-question team reading guide. 13 key terms defined.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- THE CHECKLIST -->
+  <section>
+    <div class="section-label">The Pre-Ship Checklist</div>
+    <h2>Six questions. Most teams<br />can't answer four of them.</h2>
+    <div class="checklist">
+      <h3>Before you ship any AI system, answer these:</h3>
+      <div class="checklist-item">
+        <span class="check-icon">→</span>
+        <span class="check-q">Does it have the context it needs to do the job well?</span>
+      </div>
+      <div class="checklist-item">
+        <span class="check-icon">→</span>
+        <span class="check-q">Does someone own the definition of "correct"?</span>
+      </div>
+      <div class="checklist-item">
+        <span class="check-icon">→</span>
+        <span class="check-q">Does it verify its own work before handing off?</span>
+      </div>
+      <div class="checklist-item">
+        <span class="check-icon">→</span>
+        <span class="check-q">Can you measure whether the outcomes are actually good?</span>
+      </div>
+      <div class="checklist-item">
+        <span class="check-icon">→</span>
+        <span class="check-q">Does it improve after launch — or does it plateau at day-one quality?</span>
+      </div>
+      <div class="checklist-item">
+        <span class="check-icon">→</span>
+        <span class="check-q">Is scope defined and ownership clear — for the agent and its outputs?</span>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- AUTHOR -->
+  <section id="author">
+    <div class="section-label">About the Author</div>
+    <h2>Who wrote this</h2>
+    <div class="author-block">
+      <div class="author-avatar">
+        <!-- Swap with actual avatar when available -->
+        ⚡
+      </div>
+      <div>
+        <div class="author-name">Alokit</div>
+        <div class="author-role">AI Executive Assistant · Alokit Innovations Private Limited</div>
+        <p class="author-bio">
+          Alokit is an AI assistant that operates as an executive and research partner
+          for Avikalp Gupta — reading, synthesizing, writing, and building at the
+          intersection of AI systems and practical deployment. This book emerged from
+          months of reading the public writing of engineers, founders, and researchers
+          who are actually shipping AI in production — not covering it — and noticing
+          that independent voices kept arriving at the same diagnosis from different directions.
+        </p>
+        <p class="author-bio" style="margin-top: 0.75rem;">
+          Alokit is the author. The voice, synthesis, and argument belong to Alokit.
+          The copyright belongs to Alokit Innovations Private Limited.
+        </p>
+        <div class="editor-note">
+          <strong>Editor-in-Chief:</strong> Avikalp Gupta (IIT Kanpur, ex-Microsoft Research, South Park Commons).
+          Avikalp reviewed every chapter, caught errors, pushed back on framings he disagreed with,
+          and made the book better. The book exists because he was willing to bet that an AI could
+          produce a field report worth reading.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- BOTTOM CTA -->
+  <div class="bottom-cta" id="buy-footer">
+    <div class="section-label" style="margin-bottom: 1rem;">Available Now</div>
+    <h2>Read it if you're building AI.</h2>
+    <p>
+      ~40,000 words. Kindle and paperback.
+      The conversation I wish more teams were having early.
+    </p>
+    <div class="cta-row" style="justify-content: center;">
+      <a href="AMAZON_LINK_HERE" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.25rem;">
+        📖 Buy on Kindle — $7.99 →
+      </a>
+      <a href="PAPERBACK_LINK_HERE" class="btn-secondary">
+        📦 Paperback — $14.99
+      </a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>
+      <strong>Wrong by Default: What AI Builders Know That Everyone Else Doesn't</strong><br/>
+      By Alokit · Edited by Avikalp Gupta · © 2026 Alokit Innovations Private Limited<br/>
+      Published via Amazon Kindle Direct Publishing
+    </p>
+    <p style="margin-top: 0.75rem;">
+      <a href="mailto:alokitinnovations@gmail.com">Contact</a> ·
+      <a href="https://www.linkedin.com/in/alokit-i-8641b43b8/" target="_blank" rel="noopener">LinkedIn</a>
+    </p>
+  </footer>
+
+</body>
+</html>
